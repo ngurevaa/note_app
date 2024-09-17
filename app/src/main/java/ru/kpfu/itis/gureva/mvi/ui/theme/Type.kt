@@ -1,34 +1,42 @@
 package ru.kpfu.itis.gureva.mvi.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import ru.kpfu.itis.gureva.mvi.R
 
-// Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+val bodyFontFamily = FontFamily(
+    Font(R.font.wix_made_for_display_regular, FontWeight.Normal)
+)
+
+val titleFontFamily = FontFamily(
+    Font(
+        R.font.wix_made_for_display_medium, FontWeight.Medium
     )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
+)
+
+val headerFontFamily = FontFamily(
+    Font(R.font.wix_made_for_display_semibold, FontWeight.Bold)
+)
+
+// Default Material 3 typography values
+val baseline = Typography()
+
+val AppTypography = Typography(
+    displayLarge = baseline.displayLarge.copy(fontFamily = headerFontFamily),
+    displayMedium = baseline.displayMedium.copy(fontFamily = headerFontFamily),
+    displaySmall = baseline.displaySmall.copy(fontFamily = headerFontFamily),
+    headlineLarge = baseline.headlineLarge.copy(fontFamily = headerFontFamily),
+    headlineMedium = baseline.headlineMedium.copy(fontFamily = headerFontFamily),
+    headlineSmall = baseline.headlineSmall.copy(fontFamily = headerFontFamily),
+    titleLarge = baseline.titleLarge.copy(fontFamily = titleFontFamily),
+    titleMedium = baseline.titleMedium.copy(fontFamily = titleFontFamily),
+    titleSmall = baseline.titleSmall.copy(fontFamily = titleFontFamily),
+    bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
+    bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
+    bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
+    labelLarge = baseline.labelLarge.copy(fontFamily = bodyFontFamily),
+    labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
+    labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
 )
