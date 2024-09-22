@@ -11,9 +11,11 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -89,9 +91,6 @@ fun MainScreen() {
     MviTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(24.dp)) {
-                Weekday(weekday = "ПОНЕДЕЛЬНИК")
-                CurrentDate(date = "17 сентября")
-                Spacer(modifier = Modifier.height(24.dp))
                 Search()
                 Spacer(modifier = Modifier.height(24.dp))
                 Groups()
@@ -179,6 +178,19 @@ fun Search(modifier: Modifier = Modifier) {
         mutableStateOf(true)
     }
 
+    AnimatedVisibility(
+        visible = expanded,
+        enter = expandVertically() + slideInVertically(),
+        exit = shrinkVertically() + slideOutVertically()
+    ) {
+        Column {
+            Weekday(weekday = "ПОНЕДЕЛЬНИК")
+            Spacer(modifier = Modifier.height(8.dp))
+            CurrentDate(date = "17 сентября")
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -246,7 +258,6 @@ fun Weekday(weekday: String) {
 fun CurrentDate(date: String) {
     Text(
         text = date,
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(top = 8.dp)
+        style = MaterialTheme.typography.titleLarge
     )
 }
