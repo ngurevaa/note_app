@@ -13,6 +13,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -24,6 +25,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -93,47 +95,6 @@ fun MainScreen() {
                 Search()
                 Spacer(modifier = Modifier.height(24.dp))
                 Groups()
-
-//                var textState by remember { mutableStateOf("") }
-//                var focusState by remember { mutableStateOf("") }
-//
-//                val localFocusManager = LocalFocusManager.current
-//                val focusRequester = FocusRequester()
-//
-//                Text(
-//                    text = focusState,
-//                    fontSize = 22.sp,
-//                    color = Color(0xFF0047AB)
-//                )
-//
-//                BasicTextField(
-//                    value = textState,
-//                    onValueChange = { textState = it },
-//                    modifier = Modifier
-//                        .focusRequester(focusRequester)
-//                        .fillMaxWidth()
-//                        .onFocusChanged {
-//                            focusState = if (it.isFocused) {
-//                                "TextField is focused."
-//                            } else {
-//                                "TextField has no focus."
-//                            }
-//                        },
-//                )
-//
-//                Row(horizontalArrangement = Arrangement.SpaceEvenly,modifier = Modifier.fillMaxWidth()) {
-//                    Button(onClick = {
-//                        focusRequester.requestFocus()
-//                    }) {
-//                        Text(text = "Set Focus")
-//                    }
-//
-//                    Button(onClick = {
-//                        localFocusManager.clearFocus()
-//                    }) {
-//                        Text(text = "Clear Focus")
-//                    }
-//                }
             }
         }
     }
@@ -210,9 +171,6 @@ fun Group(item: GroupEntity, modifier: Modifier = Modifier) {
 
 @Composable
 fun Search(modifier: Modifier = Modifier) {
-    var text by remember {
-        mutableStateOf("lal")
-    }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
@@ -220,32 +178,11 @@ fun Search(modifier: Modifier = Modifier) {
     var expanded by remember {
         mutableStateOf(true)
     }
-//    val interactionSource = remember { MutableInteractionSource() }
-//    val isFocused by interactionSource.collectIsFocusedAsState()
-//
-//
-//    LaunchedEffect(isFocused) {
-//        text = isFocused.toString()
-//        expanded = !isFocused
-//    }
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        AnimatedVisibility(
-            visible = !expanded,
-            enter = expandHorizontally(expandFrom = Alignment.Start,
-                animationSpec = tween(durationMillis = 2000)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 1100)),
-            modifier = Modifier.align(Alignment.CenterEnd)
-        ) {
-            Text(text = "cansel", modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .clickable {
-                    focusManager.clearFocus()
-                })
-        }
-
         BasicTextField(
             value = value,
             onValueChange = {
@@ -254,24 +191,14 @@ fun Search(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .focusRequester(focusRequester)
                 .onFocusChanged {
-                    text = if (it.isFocused) {
-                        "TextField is focused."
-                    } else {
-                        "TextField has no focus."
-                    }
-
-                    expanded = if (it.isFocused) {
-                        false
-                    } else {
-                        true
-                    }
-                },
+                    expanded = !it.isFocused
+                }
+                .weight(1f),
             singleLine = true,
             decorationBox = { innerTextField ->
                 Row(
                     modifier = Modifier
-                        .animateContentSize(animationSpec = tween(durationMillis = 2000))
-                        .fillMaxWidth(if (expanded) 1f else 0.7f)
+                        .animateContentSize()
                         .background(
                             MaterialTheme.colorScheme.surfaceContainerHighest,
                             RoundedCornerShape(percent = 30)
@@ -285,12 +212,23 @@ fun Search(modifier: Modifier = Modifier) {
                 }
             },
             textStyle = TextStyle(fontFamily = bodyFontFamily, fontSize = 18.sp),
-            cursorBrush = SolidColor(Color.LightGray),
-//            interactionSource = interactionSource,
+            cursorBrush = SolidColor(Color.LightGray)
         )
 
-
-        Text(text = text, modifier = Modifier.align(Alignment.BottomStart))
+        AnimatedVisibility(
+            visible = !expanded,
+            enter = expandHorizontally(expandFrom = Alignment.Start),
+            exit = shrinkHorizontally(shrinkTowards = Alignment.Start)
+        ) {
+            Row {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Отмена", modifier = Modifier
+                    .clickable {
+                        focusManager.clearFocus()
+                    }
+                )
+            }
+        }
     }
     
 }
