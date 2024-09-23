@@ -1,14 +1,7 @@
 package ru.kpfu.itis.gureva.mvi.ui.screen.main
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
@@ -16,56 +9,42 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -74,42 +53,83 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.kpfu.itis.gureva.mvi.data.GroupEntity
 import ru.kpfu.itis.gureva.mvi.ui.theme.MviTheme
 import ru.kpfu.itis.gureva.mvi.ui.theme.bodyFontFamily
-import kotlin.math.exp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ru.kpfu.itis.gureva.mvi.R
 
 @Preview
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: MainViewModel = viewModel()) {
     MviTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Search()
-                Spacer(modifier = Modifier.height(24.dp))
-                Groups()
-            }
+        val state by viewModel.state.collectAsStateWithLifecycle()
+
+        MainScreenContent(state, viewModel::obtainEvent)
+    }
+}
+
+@Composable
+fun MainScreenContent(
+    uiState: MainScreenState,
+    eventHandler: (MainScreenEvent) -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp)
+        ) {
+            TopMainScreen(uiState = uiState)
+
+            BottomMainScreen(uiState, eventHandler)
         }
     }
 }
 
 @Composable
-fun Groups(groups: List<GroupEntity> = listOf(GroupEntity(1, "Сегодня"),
-    GroupEntity(2, "Входящие"))) {
+fun TopMainScreen(uiState: MainScreenState) {
+    AnimatedVisibility(
+        visible = uiState.expanded,
+        enter = expandVertically() + slideInVertically(),
+        exit = shrinkVertically() + slideOutVertically()
+    ) {
+        Column {
+            Weekday(weekday = uiState.weekday)
+            Spacer(modifier = Modifier.height(8.dp))
+            CurrentDate(date = uiState.date)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun BottomMainScreen(uiState: MainScreenState, eventHandler: (MainScreenEvent) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
+        item(
+            span = { GridItemSpan(maxLineSpan) }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Search(uiState, eventHandler)
+            }
+        }
+
         items(
-            items = groups,
+            items = uiState.groups,
             key = {group: GroupEntity ->  group.id},
         ) { item ->
             Group(item)
@@ -136,8 +156,7 @@ fun AddGroup() {
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 Icon(Icons.Filled.Add, contentDescription = null)
             }
@@ -146,7 +165,7 @@ fun AddGroup() {
 }
 
 @Composable
-fun Group(item: GroupEntity, modifier: Modifier = Modifier) {
+fun Group(item: GroupEntity) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -169,80 +188,75 @@ fun Group(item: GroupEntity, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Search(modifier: Modifier = Modifier) {
+fun RowScope.Search(uiState: MainScreenState, eventHandler: (MainScreenEvent) -> Unit) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
-    var value by rememberSaveable { mutableStateOf("") }
-    var expanded by remember {
-        mutableStateOf(true)
-    }
-
-    AnimatedVisibility(
-        visible = expanded,
-        enter = expandVertically() + slideInVertically(),
-        exit = shrinkVertically() + slideOutVertically()
-    ) {
-        Column {
-            Weekday(weekday = "ПОНЕДЕЛЬНИК")
-            Spacer(modifier = Modifier.height(8.dp))
-            CurrentDate(date = "17 сентября")
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BasicTextField(
-            value = value,
-            onValueChange = {
-                value = it
-            },
-            modifier = Modifier
-                .focusRequester(focusRequester)
-                .onFocusChanged {
-                    expanded = !it.isFocused
-                }
-                .weight(1f),
-            singleLine = true,
-            decorationBox = { innerTextField ->
-                Row(
-                    modifier = Modifier
-                        .animateContentSize()
-                        .background(
-                            MaterialTheme.colorScheme.surfaceContainerHighest,
-                            RoundedCornerShape(percent = 30)
-                        )
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.width(8.dp))
+    BasicTextField(
+        value = uiState.searchState,
+        onValueChange = { value ->
+            eventHandler(MainScreenEvent.OnSearchChanged(value))
+        },
+        modifier = Modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged {
+                eventHandler(MainScreenEvent.OnFocusChanged(!it.isFocused))
+            }
+            .weight(1f),
+        singleLine = true,
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .animateContentSize()
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainerHighest,
+                        RoundedCornerShape(percent = 30)
+                    )
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(8.dp))
+                Box(Modifier.weight(1f)) {
                     innerTextField()
                 }
-            },
-            textStyle = TextStyle(fontFamily = bodyFontFamily, fontSize = 18.sp),
-            cursorBrush = SolidColor(Color.LightGray)
-        )
 
-        AnimatedVisibility(
-            visible = !expanded,
-            enter = expandHorizontally(expandFrom = Alignment.Start),
-            exit = shrinkHorizontally(shrinkTowards = Alignment.Start)
-        ) {
-            Row {
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Отмена", modifier = Modifier
-                    .clickable {
-                        focusManager.clearFocus()
+                AnimatedVisibility(
+                    visible = uiState.searchState.isNotEmpty(),
+                    enter = fadeIn(tween(durationMillis = 350)),
+                    exit = fadeOut(tween(durationMillis = 350))
+                ) {
+                    Row {
+                        Spacer(Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = null,
+                            modifier = Modifier.clickable {
+                                eventHandler(MainScreenEvent.OnCanselClicked)
+                            }
+                        )
                     }
-                )
+                }
             }
+        },
+        textStyle = TextStyle(fontFamily = bodyFontFamily, fontSize = 18.sp)
+    )
+
+    AnimatedVisibility(
+        visible = !uiState.expanded,
+        enter = expandHorizontally(expandFrom = Alignment.Start),
+        exit = shrinkHorizontally(shrinkTowards = Alignment.Start)
+    ) {
+        Row {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = stringResource(id = R.string.cansel), modifier = Modifier
+                .clickable {
+                    eventHandler(MainScreenEvent.OnCanselClicked)
+                    focusManager.clearFocus()
+                }
+            )
         }
     }
-    
 }
 
 @Composable
