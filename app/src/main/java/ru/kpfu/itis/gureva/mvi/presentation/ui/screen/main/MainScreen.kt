@@ -1,5 +1,6 @@
 package ru.kpfu.itis.gureva.mvi.presentation.ui.screen.main
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -12,6 +13,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,20 +65,20 @@ import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.bodyFontFamily
 import ru.kpfu.itis.gureva.mvi.R
 import ru.kpfu.itis.gureva.mvi.presentation.ui.noRippleClickable
 
-@Preview
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
+fun MainScreen(viewModel: MainViewModel = hiltViewModel(), navigateToGroup: (Int?) -> Unit) {
     MviTheme {
         val state by viewModel.state.collectAsStateWithLifecycle()
 
-        MainScreenContent(state, viewModel::obtainEvent)
+        MainScreenContent(state, viewModel::obtainEvent, navigateToGroup)
     }
 }
 
 @Composable
 fun MainScreenContent(
     uiState: MainScreenState,
-    eventHandler: (MainScreenEvent) -> Unit
+    eventHandler: (MainScreenEvent) -> Unit,
+    navigateToGroup: (Int?) -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize()
@@ -85,7 +87,7 @@ fun MainScreenContent(
             modifier = Modifier.padding(top = 24.dp)
         ) {
             TopMainScreen(uiState = uiState, modifier = Modifier.padding(horizontal = 24.dp))
-            BottomMainScreen(uiState, eventHandler, Modifier.padding(horizontal = 16.dp))
+            BottomMainScreen(uiState, eventHandler, navigateToGroup, Modifier.padding(horizontal = 16.dp))
         }
     }
 }
@@ -112,6 +114,7 @@ fun TopMainScreen(uiState: MainScreenState, modifier: Modifier = Modifier) {
 fun BottomMainScreen(
     uiState: MainScreenState,
     eventHandler: (MainScreenEvent) -> Unit,
+    navigateToGroup: (Int?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -135,7 +138,7 @@ fun BottomMainScreen(
         items(
             items = uiState.groups
         ) { item ->
-            Group(item)
+            Group(item, navigateToGroup)
         }
 
         item {
@@ -159,7 +162,11 @@ fun AddGroup() {
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .noRippleClickable {
+
+                    },
             ) {
                 Icon(Icons.Filled.Add, contentDescription = null)
             }
@@ -168,7 +175,7 @@ fun AddGroup() {
 }
 
 @Composable
-fun Group(item: GroupEntity) {
+fun Group(item: GroupEntity, navigateToGroup: (Int?) -> Unit) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -179,7 +186,11 @@ fun Group(item: GroupEntity) {
     ) {
         Box(
             contentAlignment = Alignment.BottomStart,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .noRippleClickable {
+                    navigateToGroup(item.id)
+                }
         ) {
             Text(
                 text = item.name,

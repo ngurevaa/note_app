@@ -47,16 +47,8 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            try {
-                val groups = mutableListOf<GroupEntity>().apply { groupRepository.getAll() }
-                groups.add(0, GroupEntity(null, resourceManager.getString(R.string.today)))
-                groups.add(1, GroupEntity(null, resourceManager.getString(R.string.all)))
-
-                _state.update {
-                    it.copy(groups = groups)
-                }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
+            _state.update {
+                it.copy(groups = groupRepository.getAll())
             }
         }
     }

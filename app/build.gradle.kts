@@ -62,10 +62,11 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
+    implementation("androidx.navigation:navigation-compose:2.8.0")
+
     //Hilt
     implementation("com.google.dagger:hilt-android:2.49")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("androidx.navigation:navigation-compose:2.8.0")
     kapt("com.google.dagger:hilt-compiler:2.48")
 
     val roomVersion = "2.6.1"
