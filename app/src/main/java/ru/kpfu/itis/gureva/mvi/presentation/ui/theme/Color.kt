@@ -1,4 +1,4 @@
-package ru.kpfu.itis.gureva.mvi.ui.theme
+package ru.kpfu.itis.gureva.mvi.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

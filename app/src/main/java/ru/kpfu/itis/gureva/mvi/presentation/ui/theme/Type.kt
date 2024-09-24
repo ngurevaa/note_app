@@ -1,4 +1,4 @@
-package ru.kpfu.itis.gureva.mvi.ui.theme
+package ru.kpfu.itis.gureva.mvi.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.Font
@@ -27,9 +27,9 @@ val AppTypography = Typography(
     displayLarge = baseline.displayLarge.copy(fontFamily = headerFontFamily),
     displayMedium = baseline.displayMedium.copy(fontFamily = headerFontFamily),
     displaySmall = baseline.displaySmall.copy(fontFamily = headerFontFamily),
-    headlineLarge = baseline.headlineLarge.copy(fontFamily = headerFontFamily),
-    headlineMedium = baseline.headlineMedium.copy(fontFamily = headerFontFamily),
-    headlineSmall = baseline.headlineSmall.copy(fontFamily = headerFontFamily),
+    headlineLarge = baseline.titleLarge.copy(fontFamily = headerFontFamily),
+    headlineMedium = baseline.titleMedium.copy(fontFamily = headerFontFamily),
+    headlineSmall = baseline.titleSmall.copy(fontFamily = headerFontFamily),
     titleLarge = baseline.titleLarge.copy(fontFamily = titleFontFamily),
     titleMedium = baseline.titleMedium.copy(fontFamily = titleFontFamily),
     titleSmall = baseline.titleSmall.copy(fontFamily = titleFontFamily),

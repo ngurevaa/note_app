@@ -1,4 +1,4 @@
-package ru.kpfu.itis.gureva.mvi.ui.screen.main
+package ru.kpfu.itis.gureva.mvi.presentation.ui.screen.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -50,24 +50,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.kpfu.itis.gureva.mvi.data.GroupEntity
-import ru.kpfu.itis.gureva.mvi.ui.theme.MviTheme
-import ru.kpfu.itis.gureva.mvi.ui.theme.bodyFontFamily
+import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.MviTheme
+import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.bodyFontFamily
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.kpfu.itis.gureva.mvi.R
+import ru.kpfu.itis.gureva.mvi.presentation.ui.noRippleClickable
 
 @Preview
 @Composable
-fun MainScreen(viewModel: MainViewModel = viewModel()) {
+fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
     MviTheme {
         val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -84,23 +84,24 @@ fun MainScreenContent(
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp)
+            modifier = Modifier.padding(top = 24.dp)
         ) {
-            TopMainScreen(uiState = uiState)
-
-            BottomMainScreen(uiState, eventHandler)
+            TopMainScreen(uiState = uiState, modifier = Modifier.padding(horizontal = 24.dp))
+            BottomMainScreen(uiState, eventHandler, Modifier.padding(horizontal = 16.dp))
         }
     }
 }
 
 @Composable
-fun TopMainScreen(uiState: MainScreenState) {
+fun TopMainScreen(uiState: MainScreenState, modifier: Modifier = Modifier) {
     AnimatedVisibility(
         visible = uiState.expanded,
         enter = expandVertically() + slideInVertically(),
         exit = shrinkVertically() + slideOutVertically()
     ) {
-        Column {
+        Column(
+            modifier = modifier
+        ) {
             Weekday(weekday = uiState.weekday)
             Spacer(modifier = Modifier.height(8.dp))
             CurrentDate(date = uiState.date)
@@ -110,12 +111,17 @@ fun TopMainScreen(uiState: MainScreenState) {
 }
 
 @Composable
-fun BottomMainScreen(uiState: MainScreenState, eventHandler: (MainScreenEvent) -> Unit) {
+fun BottomMainScreen(
+    uiState: MainScreenState,
+    eventHandler: (MainScreenEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
-        contentPadding = PaddingValues(vertical = 8.dp)
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+        modifier = modifier
     ) {
         item(
             span = { GridItemSpan(maxLineSpan) }
@@ -180,7 +186,7 @@ fun Group(item: GroupEntity) {
         ) {
             Text(
                 text = item.name,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(20.dp)
             )
         }
@@ -231,7 +237,7 @@ fun RowScope.Search(uiState: MainScreenState, eventHandler: (MainScreenEvent) ->
                         Icon(
                             imageVector = Icons.Filled.Clear,
                             contentDescription = null,
-                            modifier = Modifier.clickable {
+                            modifier = Modifier.noRippleClickable {
                                 eventHandler(MainScreenEvent.OnCanselClicked)
                             }
                         )
@@ -250,7 +256,7 @@ fun RowScope.Search(uiState: MainScreenState, eventHandler: (MainScreenEvent) ->
         Row {
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = stringResource(id = R.string.cansel), modifier = Modifier
-                .clickable {
+                .noRippleClickable {
                     eventHandler(MainScreenEvent.OnCanselClicked)
                     focusManager.clearFocus()
                 }
@@ -272,6 +278,6 @@ fun Weekday(weekday: String) {
 fun CurrentDate(date: String) {
     Text(
         text = date,
-        style = MaterialTheme.typography.titleLarge
+        style = MaterialTheme.typography.headlineLarge
     )
 }

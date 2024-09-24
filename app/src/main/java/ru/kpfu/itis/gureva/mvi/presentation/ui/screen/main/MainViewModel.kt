@@ -1,11 +1,13 @@
-package ru.kpfu.itis.gureva.mvi.ui.screen.main
+package ru.kpfu.itis.gureva.mvi.presentation.ui.screen.main
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ru.kpfu.itis.gureva.mvi.data.GroupEntity
+import javax.inject.Inject
 
 data class MainScreenState(
     val weekday: String = "ПОНЕДЕЛЬНИК",
@@ -28,7 +30,10 @@ sealed interface MainScreenEvent {
     data object OnCanselClicked : MainScreenEvent
 }
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val name: String
+) : ViewModel() {
     private val _state = MutableStateFlow(MainScreenState())
     val state: StateFlow<MainScreenState>
         get() = _state.asStateFlow()
