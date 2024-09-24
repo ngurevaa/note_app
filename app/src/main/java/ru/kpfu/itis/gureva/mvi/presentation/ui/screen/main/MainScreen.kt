@@ -12,7 +12,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,10 +57,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ru.kpfu.itis.gureva.mvi.data.GroupEntity
+import ru.kpfu.itis.gureva.mvi.data.database.entity.GroupEntity
 import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.MviTheme
 import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.bodyFontFamily
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.kpfu.itis.gureva.mvi.R
 import ru.kpfu.itis.gureva.mvi.presentation.ui.noRippleClickable
 
@@ -135,8 +133,7 @@ fun BottomMainScreen(
         }
 
         items(
-            items = uiState.groups,
-            key = {group: GroupEntity ->  group.id},
+            items = uiState.groups
         ) { item ->
             Group(item)
         }
@@ -186,7 +183,7 @@ fun Group(item: GroupEntity) {
         ) {
             Text(
                 text = item.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(20.dp)
             )
         }

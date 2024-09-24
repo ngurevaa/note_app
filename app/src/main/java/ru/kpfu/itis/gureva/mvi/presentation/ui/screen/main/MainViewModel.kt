@@ -1,25 +1,24 @@
 package ru.kpfu.itis.gureva.mvi.presentation.ui.screen.main
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import ru.kpfu.itis.gureva.mvi.data.GroupEntity
+import kotlinx.coroutines.launch
+import ru.kpfu.itis.gureva.mvi.R
+import ru.kpfu.itis.gureva.mvi.data.database.entity.GroupEntity
+import ru.kpfu.itis.gureva.mvi.data.database.repository.GroupRepository
+import ru.kpfu.itis.gureva.mvi.util.CalendarUtil
+import ru.kpfu.itis.gureva.mvi.util.ResourceManager
 import javax.inject.Inject
 
 data class MainScreenState(
-    val weekday: String = "ПОНЕДЕЛЬНИК",
-    val date: String = "17 сентября",
-    val groups: List<GroupEntity> = listOf(
-        GroupEntity(1, "Сегодня"),
-        GroupEntity(2, "Входящие"),
-        GroupEntity(3, "Входящие"),
-        GroupEntity(4, "Входящие"),
-        GroupEntity(5, "Входящие"),
-        GroupEntity(6, "Входящие"),
-        GroupEntity(7, "Входящие")),
+    val weekday: String = "",
+    val date: String = "",
+    val groups: List<GroupEntity> = listOf(),
     val searchState: String = "",
     val expanded: Boolean = true
 )
@@ -32,17 +31,41 @@ sealed interface MainScreenEvent {
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val name: String
+    private val groupRepository: GroupRepository,
+    calendar: CalendarUtil,
+    private val resourceManager: ResourceManager
 ) : ViewModel() {
-    private val _state = MutableStateFlow(MainScreenState())
+
+    private val _state = MutableStateFlow(
+        MainScreenState(
+            weekday = calendar.getWeekday().uppercase(),
+            date = calendar.getDate()
+        )
+    )
     val state: StateFlow<MainScreenState>
         get() = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            try {
+                val groups = mutableListOf<GroupEntity>().apply { groupRepository.getAll() }
+                groups.add(0, GroupEntity(null, resourceManager.getString(R.string.today)))
+                groups.add(1, GroupEntity(null, resourceManager.getString(R.string.all)))
+
+                _state.update {
+                    it.copy(groups = groups)
+                }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+    }
 
     fun obtainEvent(event: MainScreenEvent) {
         when (event) {
             is MainScreenEvent.OnSearchChanged -> onSearchChanged(event.search)
             is MainScreenEvent.OnFocusChanged -> onFocusChanged(event.focus)
-            MainScreenEvent.OnCanselClicked -> onCanselClicked()
+            is MainScreenEvent.OnCanselClicked -> onCanselClicked()
         }
     }
 
