@@ -32,8 +32,7 @@ sealed interface MainScreenEvent {
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val groupRepository: GroupRepository,
-    calendar: CalendarUtil,
-    private val resourceManager: ResourceManager
+    calendar: CalendarUtil
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
