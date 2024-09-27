@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -56,6 +57,8 @@ android {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+
     implementation(libs.androidx.ui.text.google.fonts)
     val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
     implementation(composeBom)

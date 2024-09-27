@@ -5,6 +5,9 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.content.MediaType.Companion.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -40,7 +43,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.createGraph
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.kpfu.itis.gureva.mvi.data.database.repository.GroupRepository
@@ -87,20 +92,24 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navHostController,
-        startDestination = "Home"
+        startDestination = Route.Home
     ) {
-        composable(route = "Home") {
-            MainScreen(navigateToGroup = {
-                navHostController.navigate(route = "Group/${it ?: 1}")
+        composable<Route.Home> {
+            MainScreen(navigateToGroup = { id ->
+                navHostController.navigate(route = Route.Group(id ?: 1)) {
+                    launchSingleTop = true
+                }
             })
         }
 
-        composable(
-            route = "Group/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
+        composable<Route.Group>(
+            enterTransition = { slideIntoContainer(
+                animationSpec = tween(3000, easing = EaseIn),
+                towards = AnimatedContentTransitionScope.SlideDirection.Up
+            ) }
         ) { backStack ->
-            Log.e("args", backStack.arguments?.getInt("id").toString())
-            GroupScreen(backStack.arguments?.getInt("id") ?: 1)
+            val id = backStack.toRoute<Route.Group>().id
+            GroupScreen(id)
         }
     }
 }
