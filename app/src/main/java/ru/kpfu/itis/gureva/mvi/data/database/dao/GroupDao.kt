@@ -12,4 +12,8 @@ interface GroupDao {
 
     @Insert
     fun add(entity: GroupEntity)
+
+    @Query("select * from groups where name = :name")
+    fun getByName(name: String): GroupEntity?
+
 }

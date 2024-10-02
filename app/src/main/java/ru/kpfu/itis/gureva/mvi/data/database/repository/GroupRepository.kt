@@ -24,4 +24,16 @@ class GroupRepository @Inject constructor(
             groupDao.add(GroupEntity(2, resourceManager.getString(R.string.all)))
         }
     }
+
+    suspend fun getByName(name: String): GroupEntity? {
+        return withContext(Dispatchers.IO) {
+            return@withContext groupDao.getByName(name)
+        }
+    }
+
+    suspend fun add(name: String) {
+        withContext(Dispatchers.IO) {
+            groupDao.add(GroupEntity(null, name))
+        }
+    }
 }
