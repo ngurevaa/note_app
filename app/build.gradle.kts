@@ -4,6 +4,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("land.sungbin.composeinvestigator") version "1.5.10-0.1.0"
 }
 
 android {

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -46,6 +47,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -53,6 +55,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -60,6 +64,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -138,12 +143,11 @@ fun AppNavHost(
         startDestination = Route.Home
     ) {
         composable<Route.Home> {
-//            MainScreen(navigateToGroup = { id ->
-//                navHostController.navigate(route = Route.Group(id ?: 1)) {
-//                    launchSingleTop = true
-//                }
-//            })
-            N()
+            MainScreen(navigateToGroup = { id ->
+                navHostController.navigate(route = Route.Group(id ?: 1)) {
+                    launchSingleTop = true
+                }
+            })
         }
 
         composable<Route.Group>(
@@ -157,94 +161,21 @@ fun AppNavHost(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun N() {
     MviTheme {
-        Surface(Modifier.fillMaxSize()) {
-            var isSheetOpen by remember {
-                mutableStateOf(false)
+        Row {
+            var count by remember { mutableIntStateOf(0) }
+            Button(onClick = { count++ }) {
+                Text("Add")
             }
-
-            Column {
-                Button(onClick = {
-                    isSheetOpen = true
-                }) {
-                    Text("open sheet")
-                }
-            }
-
-            val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            if (isSheetOpen) {
-                ModalBottomSheet(sheetState = state,
-                    onDismissRequest = { isSheetOpen = false },
-                    shape = RoundedCornerShape(8.dp),
-                    dragHandle = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.new_list),
-                                style = MaterialTheme.typography.headlineMedium,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-
-                            Icon(
-                                Icons.Filled.Clear,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .noRippleClickable {
-                                        isSheetOpen = false
-                                    }
-                            )
-                        }
-                    }
-                ) {
-                    var value by remember {
-                        mutableStateOf("")
-                    }
-                    val focusRequester = remember { FocusRequester() }
-                    BasicTextField(
-                        value = value,
-                        onValueChange = { value = it },
-                        modifier = Modifier
-                            .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
-                            .focusRequester(focusRequester),
-                        textStyle = TextStyle(fontFamily = bodyFontFamily, fontSize = 18.sp, lineHeight = 28.sp),
-                        minLines = 5,
-                        maxLines = 5
-                    )
-
-                    LaunchedEffect(Unit) {
-                        focusRequester.requestFocus()
-                    }
-
-                    Column {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.secondary
-                        ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .noRippleClickable {
-
-                                    },
-                            ) {
-                                Icon(
-                                    Icons.Filled.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                        }
-                    }
-                }
+            AnimatedContent(
+                targetState = count,
+                label = "animated content"
+            ) { targetCount ->
+                // Make sure to use `targetCount`, not `count`.
+                Text(text = "Count: $targetCount")
             }
         }
     }
