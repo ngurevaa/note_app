@@ -8,8 +8,8 @@ import javax.inject.Inject
 class CalendarUtil @Inject constructor(
     private val resourceManager: ResourceManager
 ) {
-    fun getWeekday(): String {
-        return when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
+    fun getWeekday(day: Int = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)): String {
+        return when (day) {
             Calendar.MONDAY -> resourceManager.getString(R.string.monday)
             Calendar.TUESDAY -> resourceManager.getString(R.string.tuesday)
             Calendar.WEDNESDAY -> resourceManager.getString(R.string.wednesday)
@@ -40,6 +40,18 @@ class CalendarUtil @Inject constructor(
             Calendar.NOVEMBER -> resourceManager.getString(R.string.november)
             Calendar.DECEMBER -> resourceManager.getString(R.string.december)
             else -> throw IllegalArgumentException("unknown month")
+        }
+    }
+
+    fun getWeekdays(): List<Char> {
+        return mutableListOf<Char>().also {
+            it.add(getWeekday(Calendar.MONDAY)[0])
+            it.add(getWeekday(Calendar.TUESDAY)[0])
+            it.add(getWeekday(Calendar.WEDNESDAY)[0])
+            it.add(getWeekday(Calendar.THURSDAY)[0])
+            it.add(getWeekday(Calendar.FRIDAY)[0])
+            it.add(getWeekday(Calendar.SATURDAY)[0])
+            it.add(getWeekday(Calendar.SUNDAY)[0])
         }
     }
 }

@@ -156,8 +156,7 @@ fun SaveGroupButton(
                         else first = false
                     }
                     is MainBottomSheetAction.CloseBottomSheet -> {
-                        scope
-                            .launch { sheetState.hide() }
+                        scope.launch { sheetState.hide() }
                             .invokeOnCompletion {
                                 if (!sheetState.isVisible) {
                                     eventHandlerScreen(MainScreenEvent.OnBottomSheetClose)
@@ -248,8 +247,7 @@ fun DragHandle(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .noRippleClickable {
-                    scope
-                        .launch { sheetState.hide() }
+                    scope.launch { sheetState.hide() }
                         .invokeOnCompletion {
                             if (!sheetState.isVisible) {
                                 eventHandler(MainScreenEvent.OnBottomSheetClose)

@@ -96,6 +96,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.kpfu.itis.gureva.mvi.R
 import ru.kpfu.itis.gureva.mvi.data.database.repository.GroupRepository
+import ru.kpfu.itis.gureva.mvi.presentation.ui.screen.calendar.Calendar
 import ru.kpfu.itis.gureva.mvi.presentation.ui.screen.group.GroupScreen
 import ru.kpfu.itis.gureva.mvi.presentation.ui.screen.main.MainScreen
 import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.MviTheme
@@ -112,7 +113,8 @@ class MainActivity : ComponentActivity() {
         appInit()
         setContent {
             MviTheme {
-                AppNavHost()
+//                AppNavHost()
+                Calendar()
             }
         }
     }
@@ -161,22 +163,3 @@ fun AppNavHost(
     }
 }
 
-@Preview
-@Composable
-fun N() {
-    MviTheme {
-        Row {
-            var count by remember { mutableIntStateOf(0) }
-            Button(onClick = { count++ }) {
-                Text("Add")
-            }
-            AnimatedContent(
-                targetState = count,
-                label = "animated content"
-            ) { targetCount ->
-                // Make sure to use `targetCount`, not `count`.
-                Text(text = "Count: $targetCount")
-            }
-        }
-    }
-}

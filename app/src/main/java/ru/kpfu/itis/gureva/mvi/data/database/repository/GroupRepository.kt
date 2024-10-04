@@ -36,4 +36,10 @@ class GroupRepository @Inject constructor(
             groupDao.add(GroupEntity(null, name))
         }
     }
+
+    suspend fun getNameById(id: Int): String {
+        return withContext(Dispatchers.IO) {
+            return@withContext groupDao.getById(id)?.name ?: ""
+        }
+    }
 }

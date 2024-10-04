@@ -285,7 +285,7 @@ fun RowScope.Search(uiState: MainScreenState, eventHandler: (MainScreenEvent) ->
 fun Weekday(weekday: String) {
     Text(
         text = weekday,
-        color = MaterialTheme.colorScheme.secondary,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.bodySmall
     )
 }

@@ -16,4 +16,6 @@ interface GroupDao {
     @Query("select * from groups where name = :name")
     fun getByName(name: String): GroupEntity?
 
+    @Query("select * from groups where id = :id")
+    fun getById(id: Int): GroupEntity?
 }

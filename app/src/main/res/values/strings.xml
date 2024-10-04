@@ -25,4 +25,6 @@
     <string name="new_list">Новый список</string>
     <string name="empty_group_name_error">Пустое название списка</string>
     <string name="existing_group_name_error">Список с таким названием уже существует</string>
+    <string name="btn_create_new_task">Добавить новую задачу</string>
+    <string name="new_task">Новая задача</string>
 </resources>
