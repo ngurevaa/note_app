@@ -1,6 +1,5 @@
 package ru.kpfu.itis.gureva.mvi.util
 
-import android.content.Context
 import ru.kpfu.itis.gureva.mvi.R
 import java.util.Calendar
 import javax.inject.Inject
@@ -25,8 +24,26 @@ class CalendarUtil @Inject constructor(
        return "${Calendar.getInstance().get(Calendar.DAY_OF_MONTH)} ${getMonth()}"
     }
 
-    fun getMonth(): String {
+    private fun getMonth(): String {
         return when (Calendar.getInstance().get(Calendar.MONTH)) {
+            Calendar.JANUARY -> resourceManager.getString(R.string.january_date)
+            Calendar.FEBRUARY -> resourceManager.getString(R.string.february_date)
+            Calendar.MARCH -> resourceManager.getString(R.string.march_date)
+            Calendar.APRIL -> resourceManager.getString(R.string.april_date)
+            Calendar.MAY -> resourceManager.getString(R.string.may_date)
+            Calendar.JUNE -> resourceManager.getString(R.string.june_date)
+            Calendar.JULY -> resourceManager.getString(R.string.july_date)
+            Calendar.AUGUST -> resourceManager.getString(R.string.august_date)
+            Calendar.SEPTEMBER -> resourceManager.getString(R.string.september_date)
+            Calendar.OCTOBER -> resourceManager.getString(R.string.october_date)
+            Calendar.NOVEMBER -> resourceManager.getString(R.string.november_date)
+            Calendar.DECEMBER -> resourceManager.getString(R.string.december_date)
+            else -> throw IllegalArgumentException("unknown month")
+        }
+    }
+
+    fun getMonth(month: Int): String {
+        return when (month) {
             Calendar.JANUARY -> resourceManager.getString(R.string.january)
             Calendar.FEBRUARY -> resourceManager.getString(R.string.february)
             Calendar.MARCH -> resourceManager.getString(R.string.march)

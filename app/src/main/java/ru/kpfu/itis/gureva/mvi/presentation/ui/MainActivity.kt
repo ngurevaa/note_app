@@ -113,8 +113,7 @@ class MainActivity : ComponentActivity() {
         appInit()
         setContent {
             MviTheme {
-//                AppNavHost()
-                Calendar()
+                AppNavHost()
             }
         }
     }

@@ -1,13 +1,13 @@
 package ru.kpfu.itis.gureva.mvi.presentation.ui.screen.calendar
 
 import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -19,37 +19,35 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.kpfu.itis.gureva.mvi.presentation.ui.noRippleClickable
 import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.MviTheme
+import ru.kpfu.itis.gureva.mvi.util.CalendarUtil
 import java.util.Calendar
 
-@Preview(showBackground = true)
 @Composable
 fun Calendar(
-//    viewModel: CreateTaskBottomSheetViewModel = hiltViewModel()
+    calendarUtil: CalendarUtil
 ) {
     MviTheme {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            Weekdays(viewModel.calendar.getWeekdays())
+
             val currentDate = remember { mutableStateOf(Calendar.getInstance()) }
-            Month(currentDate)
-            Weekdays()
+            Month(currentDate, calendarUtil)
+            Weekdays(calendarUtil.getWeekdays())
             CalendarPager(currentDate)
         }
     }
 }
 
 @Composable
-fun Weekdays(weekdays: List<Char> = listOf('П', 'В', 'С', 'Ч', 'П', 'С', 'В')) {
+fun Weekdays(weekdays: List<Char>) {
     Row {
         weekdays.forEach {
             Box(
@@ -71,13 +69,13 @@ fun Weekdays(weekdays: List<Char> = listOf('П', 'В', 'С', 'Ч', 'П', 'С', '
 @Composable
 fun CalendarPager(currentDate: MutableState<Calendar>) {
     val initialMonth by remember { mutableStateOf(Calendar.getInstance()) }
+    val selectedDay = remember { mutableStateOf(Calendar.getInstance()) }
 
     val pagerState = rememberPagerState(initialPage = Int.MAX_VALUE / 2, pageCount = { Int.MAX_VALUE })
     LaunchedEffect(Unit) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
             val month = initialMonth.clone() as Calendar
             month.add(Calendar.MONTH, page - Int.MAX_VALUE / 2)
-            Log.e("l", "page $page")
             currentDate.value = month
         }
     }
@@ -87,33 +85,44 @@ fun CalendarPager(currentDate: MutableState<Calendar>) {
         modifier = Modifier.fillMaxWidth()
     ) { page ->
         Column {
-            val month = initialMonth.clone() as Calendar
-            month.add(Calendar.MONTH, page - Int.MAX_VALUE / 2)
+            val date = initialMonth.clone() as Calendar
+            date.set(Calendar.DAY_OF_MONTH, 1)
+            date.add(Calendar.MONTH, page - Int.MAX_VALUE / 2)
 
-            val daysInMonth = month.getActualMaximum(Calendar.DAY_OF_MONTH)
-            var startingDayOfWeek = (month.clone() as Calendar).also { it.set(Calendar.DAY_OF_MONTH, 1) }.get(Calendar.DAY_OF_WEEK) - 2
+            val daysInMonth = date.getActualMaximum(Calendar.DAY_OF_MONTH)
+            var startingDayOfWeek = ((date.clone() as Calendar).also { it.set(Calendar.DAY_OF_MONTH, 1) }.get(Calendar.DAY_OF_WEEK) + 5) % 7
 
             var dayCount = 1
             var rowCount = 0
 
             while (dayCount <= daysInMonth) {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     repeat(startingDayOfWeek) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
 
                     for (i in 1..(7 - startingDayOfWeek)) {
                         if (dayCount <= daysInMonth) {
-                            val color = if (i + startingDayOfWeek == 6 || i + startingDayOfWeek == 7)
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            else MaterialTheme.colorScheme.onBackground
+                            date.set(Calendar.DAY_OF_MONTH, dayCount)
 
-                            Day(dayCount++, color)
+                            if (date.get(Calendar.YEAR) == selectedDay.value.get(Calendar.YEAR) &&
+                                date.get(Calendar.MONTH) == selectedDay.value.get(Calendar.MONTH) &&
+                                date.get(Calendar.DAY_OF_MONTH) == selectedDay.value.get(Calendar.DAY_OF_MONTH)) {
+                                SelectedDay(
+                                    dayCount = dayCount
+                                )
+                            }
+                            else {
+                                Day(
+                                    date = date.clone() as Calendar,
+                                    selectedDay = selectedDay,
+                                    holiday = i + startingDayOfWeek == 6 || i + startingDayOfWeek == 7
+                                )
+                            }
                         } else {
                             Spacer(modifier = Modifier.weight(1f))
                         }
+                        dayCount++
                     }
                     startingDayOfWeek = 0
                     rowCount++
@@ -135,29 +144,72 @@ fun CalendarPager(currentDate: MutableState<Calendar>) {
 }
 
 @Composable
-fun RowScope.Day(dayCount: Int, color: Color) {
+fun RowScope.Day(
+    holiday: Boolean,
+    date: Calendar,
+    selectedDay: MutableState<Calendar>
+) {
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .padding(vertical = 12.dp)
+            .noRippleClickable {
+                selectedDay.value = date
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = date.get(Calendar.DAY_OF_MONTH).toString(),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (holiday) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
+@Composable
+fun RowScope.SelectedDay(
+    dayCount: Int
+) {
     Box(
         modifier = Modifier
             .weight(1f),
         contentAlignment = Alignment.Center
     ) {
+        val color = MaterialTheme.colorScheme.primary
+        val fontSize = MaterialTheme.typography.bodySmall.fontSize
+        Canvas(modifier = Modifier) {
+            drawCircle(
+                color = color,
+                center = center,
+                radius = fontSize.toPx()
+            )
+        }
+
         Text(
             text = dayCount.toString(),
             style = MaterialTheme.typography.bodySmall,
-            color = color
+            color = MaterialTheme.colorScheme.onPrimary
         )
     }
 }
 
+
 @Composable 
-fun Month(currentDate: MutableState<Calendar>) {
+fun Month(currentDate: MutableState<Calendar>, calendar: CalendarUtil) {
     val month = currentDate.value.get(Calendar.MONTH)
     val year = currentDate.value.get(Calendar.YEAR)
 
-    val text = if (year != Calendar.getInstance().get(Calendar.YEAR)) "$month $year"
-        else "$month"
+    val text = if (year != Calendar.getInstance().get(Calendar.YEAR)) "${calendar.getMonth(month)} $year"
+        else calendar.getMonth(month)
     Text(
         text = text,
-        modifier = Modifier.padding(24.dp)
+        modifier = Modifier.padding(24.dp),
+        style = MaterialTheme.typography.headlineMedium
     )
+}
+
+
+fun main() {
+    println((1).rem(-7))
 }
