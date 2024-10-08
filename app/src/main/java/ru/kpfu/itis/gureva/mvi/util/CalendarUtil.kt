@@ -71,5 +71,31 @@ class CalendarUtil @Inject constructor(
             it.add(getWeekday(Calendar.SUNDAY)[0])
         }
     }
+
+    fun getFullDate(date: Calendar): String {
+        if (date.get(Calendar.YEAR) == Calendar.getInstance().get(Calendar.YEAR)) {
+            return "${date.get(Calendar.DAY_OF_MONTH)} ${getMonthShort(date.get(Calendar.MONTH))}"
+        }
+        return "${date.get(Calendar.DAY_OF_MONTH)} ${getMonthShort(date.get(Calendar.MONTH))} " +
+                "${date.get(Calendar.YEAR)} ${resourceManager.getString(R.string.year_short)}"
+    }
+
+    private fun getMonthShort(month: Int): String {
+        return when (month) {
+            Calendar.JANUARY -> resourceManager.getString(R.string.january_date_short)
+            Calendar.FEBRUARY -> resourceManager.getString(R.string.february_date_short)
+            Calendar.MARCH -> resourceManager.getString(R.string.march_date_short)
+            Calendar.APRIL -> resourceManager.getString(R.string.april_date_short)
+            Calendar.MAY -> resourceManager.getString(R.string.may_date_short)
+            Calendar.JUNE -> resourceManager.getString(R.string.june_date_short)
+            Calendar.JULY -> resourceManager.getString(R.string.july_date_short)
+            Calendar.AUGUST -> resourceManager.getString(R.string.august_date_short)
+            Calendar.SEPTEMBER -> resourceManager.getString(R.string.september_date_short)
+            Calendar.OCTOBER -> resourceManager.getString(R.string.october_date_short)
+            Calendar.NOVEMBER -> resourceManager.getString(R.string.november_date_short)
+            Calendar.DECEMBER -> resourceManager.getString(R.string.december_date_short)
+            else -> throw IllegalArgumentException("unknown month")
+        }
+    }
 }
 

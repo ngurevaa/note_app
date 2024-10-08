@@ -174,7 +174,7 @@ fun SaveGroupButton(
             ) { visible ->
                 if (visible) {
                     if (action is MainBottomSheetAction.ShowError) {
-                        ErrorMessage(action)
+                        ErrorMessage((action as? MainBottomSheetAction.ShowError)?.message.toString())
 
                         LaunchedEffect(visibility) {
                             if (visibility) {
@@ -207,7 +207,7 @@ fun SaveButton() {
 
 @Composable
 fun ErrorMessage(
-    action: MainBottomSheetAction?
+    message: String
 ) {
     Box(
         modifier = Modifier
@@ -216,7 +216,7 @@ fun ErrorMessage(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = (action as? MainBottomSheetAction.ShowError)?.message.toString(),
+            text = message.toString(),
             modifier = Modifier.padding(horizontal = 24.dp),
             textAlign = TextAlign.Center
         )

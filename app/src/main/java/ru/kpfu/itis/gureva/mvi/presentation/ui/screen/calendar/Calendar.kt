@@ -19,30 +19,34 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.kpfu.itis.gureva.mvi.presentation.ui.noRippleClickable
-import ru.kpfu.itis.gureva.mvi.presentation.ui.theme.MviTheme
+import ru.kpfu.itis.gureva.mvi.presentation.ui.screen.group.CreateTaskBottomSheetEvent
 import ru.kpfu.itis.gureva.mvi.util.CalendarUtil
 import java.util.Calendar
 
 @Composable
 fun Calendar(
-    calendarUtil: CalendarUtil
+    calendarUtil: CalendarUtil,
+    eventHandler: (CreateTaskBottomSheetEvent) -> Unit,
+    selectedDay: Calendar?
 ) {
-    MviTheme {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-            val currentDate = remember { mutableStateOf(Calendar.getInstance()) }
-            Month(currentDate, calendarUtil)
-            Weekdays(calendarUtil.getWeekdays())
-            CalendarPager(currentDate)
-        }
+        val currentDate = remember { mutableStateOf(Calendar.getInstance()) }
+        Month(currentDate, calendarUtil)
+        Weekdays(calendarUtil.getWeekdays())
+        CalendarPager(currentDate, eventHandler, selectedDay)
     }
 }
 
@@ -67,14 +71,23 @@ fun Weekdays(weekdays: List<Char>) {
 }
 
 @Composable
-fun CalendarPager(currentDate: MutableState<Calendar>) {
-    val initialMonth by remember { mutableStateOf(Calendar.getInstance()) }
-    val selectedDay = remember { mutableStateOf(Calendar.getInstance()) }
+fun CalendarPager(
+    currentDate: MutableState<Calendar>,
+    eventHandler: (CreateTaskBottomSheetEvent) -> Unit,
+    selectedDay: Calendar?
+) {
+    val initialDate by remember { mutableStateOf(Calendar.getInstance()) }
+    val difference = selectedDay?.let {
+        val first = initialDate.get(Calendar.YEAR) - selectedDay.get(Calendar.YEAR)
+        val second =  initialDate.get(Calendar.MONTH) - selectedDay.get(Calendar.MONTH)
+        first * 12 + second
+    } ?: 0
 
-    val pagerState = rememberPagerState(initialPage = Int.MAX_VALUE / 2, pageCount = { Int.MAX_VALUE })
+    Log.e("diff", difference.toString())
+    val pagerState = rememberPagerState(initialPage = Int.MAX_VALUE / 2 - difference, pageCount = { Int.MAX_VALUE })
     LaunchedEffect(Unit) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
-            val month = initialMonth.clone() as Calendar
+            val month = initialDate.clone() as Calendar
             month.add(Calendar.MONTH, page - Int.MAX_VALUE / 2)
             currentDate.value = month
         }
@@ -85,7 +98,7 @@ fun CalendarPager(currentDate: MutableState<Calendar>) {
         modifier = Modifier.fillMaxWidth()
     ) { page ->
         Column {
-            val date = initialMonth.clone() as Calendar
+            val date = initialDate.clone() as Calendar
             date.set(Calendar.DAY_OF_MONTH, 1)
             date.add(Calendar.MONTH, page - Int.MAX_VALUE / 2)
 
@@ -105,18 +118,32 @@ fun CalendarPager(currentDate: MutableState<Calendar>) {
                         if (dayCount <= daysInMonth) {
                             date.set(Calendar.DAY_OF_MONTH, dayCount)
 
-                            if (date.get(Calendar.YEAR) == selectedDay.value.get(Calendar.YEAR) &&
-                                date.get(Calendar.MONTH) == selectedDay.value.get(Calendar.MONTH) &&
-                                date.get(Calendar.DAY_OF_MONTH) == selectedDay.value.get(Calendar.DAY_OF_MONTH)) {
+                            if (date.get(Calendar.YEAR) == selectedDay?.get(Calendar.YEAR) &&
+                                date.get(Calendar.MONTH) == selectedDay.get(Calendar.MONTH) &&
+                                date.get(Calendar.DAY_OF_MONTH) == selectedDay.get(Calendar.DAY_OF_MONTH)
+                            ) {
                                 SelectedDay(
-                                    dayCount = dayCount
+                                    dayCount = dayCount,
+                                    eventHandler = eventHandler
+                                )
+                            }
+                            else if (date.get(Calendar.YEAR) == initialDate.get(Calendar.YEAR) &&
+                                date.get(Calendar.MONTH) == initialDate.get(Calendar.MONTH) &&
+                                date.get(Calendar.DAY_OF_MONTH) == initialDate.get(Calendar.DAY_OF_MONTH)) {
+                                Day(
+                                    date = date.clone() as Calendar,
+                                    color = MaterialTheme.colorScheme.error,
+                                    eventHandler = eventHandler
                                 )
                             }
                             else {
+                                val color = if (i + startingDayOfWeek == 6 || i + startingDayOfWeek == 7)
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    else MaterialTheme.colorScheme.onBackground
                                 Day(
                                     date = date.clone() as Calendar,
-                                    selectedDay = selectedDay,
-                                    holiday = i + startingDayOfWeek == 6 || i + startingDayOfWeek == 7
+                                    color = color,
+                                    eventHandler = eventHandler
                                 )
                             }
                         } else {
@@ -145,35 +172,38 @@ fun CalendarPager(currentDate: MutableState<Calendar>) {
 
 @Composable
 fun RowScope.Day(
-    holiday: Boolean,
+    color: Color,
     date: Calendar,
-    selectedDay: MutableState<Calendar>
+    eventHandler: (CreateTaskBottomSheetEvent) -> Unit
 ) {
     Box(
         modifier = Modifier
             .weight(1f)
             .padding(vertical = 12.dp)
             .noRippleClickable {
-                selectedDay.value = date
+                eventHandler(CreateTaskBottomSheetEvent.OnDateSelected(date))
             },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = date.get(Calendar.DAY_OF_MONTH).toString(),
             style = MaterialTheme.typography.bodySmall,
-            color = if (holiday) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.onBackground
+            color = color
         )
     }
 }
 
 @Composable
 fun RowScope.SelectedDay(
-    dayCount: Int
+    dayCount: Int,
+    eventHandler: (CreateTaskBottomSheetEvent) -> Unit
 ) {
     Box(
         modifier = Modifier
-            .weight(1f),
+            .weight(1f)
+            .noRippleClickable {
+                eventHandler(CreateTaskBottomSheetEvent.OnDateSelected(null))
+            },
         contentAlignment = Alignment.Center
     ) {
         val color = MaterialTheme.colorScheme.primary
@@ -209,7 +239,3 @@ fun Month(currentDate: MutableState<Calendar>, calendar: CalendarUtil) {
     )
 }
 
-
-fun main() {
-    println((1).rem(-7))
-}
